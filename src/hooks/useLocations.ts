@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { collection, query, where, onSnapshot, addDoc, Timestamp, QueryDocumentSnapshot, type DocumentData } from 'firebase/firestore'
+import { collection, query, where, onSnapshot, addDoc, Timestamp, QueryDocumentSnapshot, type DocumentData, deleteDoc, doc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase/config'
 
 export interface Location {
@@ -15,25 +15,38 @@ export interface CreateLocationData {
 }
 
 const locationsCache: Record<string, Location[]> = {}
+let allLocationsCache: Location[] | null = null
 
 export const useLocations = (countryId?: string) => {
-  const [locations, setLocations] = useState<Location[]>(countryId ? locationsCache[countryId] || [] : [])
-  const [loading, setLoading] = useState(!countryId || !locationsCache[countryId])
+  const [locations, setLocations] = useState<Location[]>(
+    countryId
+      ? (locationsCache[countryId] || [])
+      : (allLocationsCache || [])
+  )
+  const [loading, setLoading] = useState(
+    countryId
+      ? !locationsCache[countryId]
+      : !allLocationsCache
+  )
   const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
-    if (!countryId) {
-      setLocations([])
+    if (countryId && locationsCache[countryId]) {
+      setLocations(locationsCache[countryId])
+      setLoading(false)
+      return
+    }
+    if (!countryId && allLocationsCache) {
+      setLocations(allLocationsCache)
       setLoading(false)
       return
     }
 
-    if (locationsCache[countryId]) {
-      setLocations(locationsCache[countryId])
-      setLoading(false)
-    }
+    // Создаем запрос
+    const q = countryId
+      ? query(collection(db, 'locations'), where('countryId', '==', countryId))
+      : query(collection(db, 'locations'))
 
-    const q = query(collection(db, 'locations'), where('countryId', '==', countryId))
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
@@ -45,7 +58,14 @@ export const useLocations = (countryId?: string) => {
           updatedAt: doc.data().updatedAt?.toDate(),
         }))
         setLocations(list)
-        locationsCache[countryId] = list
+
+        // Сохраняем в соответствующий кеш
+        if (countryId) {
+          locationsCache[countryId] = list
+        } else {
+          allLocationsCache = list
+        }
+
         setLoading(false)
       },
       (error) => {
@@ -76,10 +96,33 @@ export const useLocations = (countryId?: string) => {
     }
   }
 
+  const deleteLocation = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'locations', id))
+    } catch (err) {
+      console.error('Error deleting location:', err)
+      throw err instanceof Error ? err : new Error('Failed to delete location')
+    }
+  }
+
+  const updateLocation = async (id: string, newName: string) => {
+    try {
+      await updateDoc(doc(db, 'locations', id), {
+        name: newName.trim(),
+        updatedAt: Timestamp.now()
+      })
+    } catch (err) {
+      console.error('Error updating location:', err)
+      throw err instanceof Error ? err : new Error('Failed to update location')
+    }
+  }
+
   return {
     locations,
     loading,
     error,
-    createLocation
+    createLocation,
+    deleteLocation,
+    updateLocation
   }
 } 

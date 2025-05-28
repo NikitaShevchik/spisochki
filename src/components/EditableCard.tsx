@@ -27,7 +27,7 @@ interface EditableCardProps {
   onDelete: (id: string) => void
   onEdit: (id: string) => void
   onSave: (id: string, newValue: string) => void
-  onClick?: () => void
+  handleClick: (e: React.MouseEvent<HTMLDivElement>) => void
 }
 
 export const EditableCard = ({
@@ -37,7 +37,7 @@ export const EditableCard = ({
   onDelete,
   onEdit,
   onSave,
-  onClick
+  handleClick,
 }: EditableCardProps) => {
   const [editValue, setEditValue] = useState(content)
 
@@ -66,11 +66,11 @@ export const EditableCard = ({
   }
 
   return (
-    <SwipeableCard
+    <SwipeableCard handleClick={handleClick}
       onDelete={() => onDelete(id)}
       onEdit={() => onEdit(id)}
     >
-      <div onClick={onClick}>
+      <div>
         {content}
       </div>
     </SwipeableCard>

@@ -63,9 +63,10 @@ interface SwipeableCardProps {
   children: React.ReactNode
   onDelete: () => void
   onEdit: () => void
+  handleClick?: (e: React.MouseEvent<HTMLDivElement>) => void
 }
 
-export const SwipeableCard = ({ children, onDelete, onEdit }: SwipeableCardProps) => {
+export const SwipeableCard = ({ children, onDelete, onEdit, handleClick }: SwipeableCardProps) => {
   const x = useMotionValue(0)
   const controls = useAnimation()
 
@@ -93,6 +94,11 @@ export const SwipeableCard = ({ children, onDelete, onEdit }: SwipeableCardProps
         onDragEnd={handleDragEnd}
         animate={controls}
         style={{ x }}
+        onClick={(e) => {
+          e.stopPropagation()
+          e.preventDefault()
+          handleClick?.(e)
+        }}
       >
         {children}
       </CardContent>

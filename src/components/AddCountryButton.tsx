@@ -1,24 +1,15 @@
 import { useState } from 'react'
-import { collection, addDoc, Timestamp, getDocs } from 'firebase/firestore'
-import { db } from '../firebase/config'
-import { ActionButton } from '../uikit/uikit'
+import { Card, colors } from '../uikit/uikit'
+import { hapticFeedback } from '../utils/telegram'
 import AddCountryForm from './AddCountryForm'
+import { useCountries } from '../hooks/useCountries'
 
 export const AddCountryButton = () => {
   const [showForm, setShowForm] = useState(false)
   const [countryName, setCountryName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  const checkCollection = async () => {
-    try {
-      const countriesRef = collection(db, 'countries')
-      await getDocs(countriesRef)
-      return true
-    } catch (e) {
-      return false
-    }
-  }
+  const { createCountry } = useCountries()
 
   const handleSubmit = async () => {
     if (!countryName.trim()) return
@@ -27,42 +18,43 @@ export const AddCountryButton = () => {
     setError(null)
 
     try {
-      const collectionExists = await checkCollection()
-      if (!collectionExists) {
-        throw new Error('Cannot access Firestore collection')
-      }
-
-      const countriesRef = collection(db, 'countries')
-
-      await addDoc(countriesRef, {
-        name: countryName.trim(),
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
-      })
-
+      await createCountry(countryName.trim())
       setCountryName('')
       setShowForm(false)
+      hapticFeedback('light')
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Failed to create country')
+      hapticFeedback('heavy')
     } finally {
       setIsLoading(false)
     }
   }
 
-  return (
-    <>
-      {!showForm && <ActionButton onClick={() => setShowForm(true)}>+</ActionButton>}
+  if (showForm) {
+    return (
+      <AddCountryForm
+        value={countryName}
+        setValue={setCountryName}
+        isLoading={isLoading}
+        error={error || ''}
+        handleClose={() => {
+          hapticFeedback('light')
+          setShowForm(false)
+        }}
+        handleSubmit={handleSubmit}
+      />
+    )
+  }
 
-      {showForm && (
-        <AddCountryForm
-          value={countryName}
-          setValue={setCountryName}
-          isLoading={isLoading}
-          error={error || ""}
-          handleClose={() => setShowForm(false)}
-          handleSubmit={handleSubmit}
-        />
-      )}
-    </>
+  return (
+    <Card
+      style={{ backgroundColor: colors.nudePink }}
+      onClick={() => {
+        hapticFeedback('light')
+        setShowForm(true)
+      }}
+    >
+      +
+    </Card>
   )
 } 

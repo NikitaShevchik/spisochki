@@ -1,35 +1,36 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useLocations } from '../hooks/useLocations'
-import { ActionButton, Card, CardList, colors, PageWrapper } from '../uikit/uikit'
+import { useCategories } from '../hooks/useCategories'
+import { Card, CardList, colors, PageWrapper } from '../uikit/uikit'
 import { H2, Text } from '../uikit/typography'
 import Loader from '../components/Loader'
-import { useCountries } from '../hooks/useCountries'
-import AddLocationForm from '../components/AddLocationForm'
 import { hapticFeedback } from '../utils/telegram'
 import { useNavigateBack } from '../hooks/useNavigateBack'
 import { EditableCard } from '../components/EditableCard'
+import { useLocations } from '../hooks/useLocations'
+import AddCategoryForm from '../components/AddCategoryForm'
 
-export const CountryPage = () => {
+export const LocationPage = () => {
   useNavigateBack()
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
-  const { countries } = useCountries()
-  const { locations, loading, createLocation, deleteLocation, updateLocation } = useLocations(id)
+  const { locations } = useLocations()
+  const { categories, loading, error, isEmpty, createCategory, deleteCategory, updateCategory } = useCategories(id)
   const [showForm, setShowForm] = useState(false)
-  const [locationName, setLocationName] = useState('')
+  const [categoryName, setCategoryName] = useState('')
   const [adding, setAdding] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const selectedCountry = countries.find(country => country.id === id)
+
+  const selectedLocation = locations.find(loc => loc.id === id)
 
   const handleSubmit = async () => {
-    if (!locationName.trim()) return
+    if (!categoryName.trim()) return
     setAdding(true)
     setErrorMessage(null)
     try {
-      await createLocation({ name: locationName })
-      setLocationName('')
+      await createCategory({ name: categoryName })
+      setCategoryName('')
       setShowForm(false)
       hapticFeedback('light')
     } catch (err) {
@@ -42,7 +43,7 @@ export const CountryPage = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      await deleteLocation(id)
+      await deleteCategory(id)
       hapticFeedback('medium')
     } catch (err) {
       hapticFeedback('heavy')
@@ -55,7 +56,7 @@ export const CountryPage = () => {
 
   const handleSave = async (id: string, newValue: string) => {
     try {
-      await updateLocation(id, newValue)
+      await updateCategory(id, newValue)
       hapticFeedback('medium')
     } catch (err) {
       hapticFeedback('heavy')
@@ -67,34 +68,49 @@ export const CountryPage = () => {
     return <Loader />
   }
 
+  if (error) {
+    return <div>Error: {error.message}</div>
+  }
+
   return (
     <PageWrapper>
-      <H2>{selectedCountry?.name}</H2>
-      {locations.length === 0 ? (
-        <Text>Нет добавленных локаций</Text>
+      <H2>{selectedLocation?.name || 'Категории локации'}</H2>
+      {categories.length > 1 && (
+        <Card
+          style={{ backgroundColor: 'transparent', border: `2px solid ${colors.pink}` }}
+          onClick={() => {
+            hapticFeedback('light')
+            navigate(`/location/${id}/all`)
+          }}
+        >
+          Все места
+        </Card>
+      )}
+      {isEmpty ? (
+        <Text>Нет добавленных категорий</Text>
       ) : (
         <CardList>
-          {locations.map(loc => (
+          {categories.map(cat => (
             <EditableCard
-              key={loc.id}
-              id={loc.id}
-              content={loc.name}
+              key={cat.id}
+              id={cat.id}
+              content={cat.name}
               editingId={editingId}
               onDelete={handleDelete}
               onEdit={handleEdit}
               onSave={handleSave}
               handleClick={() => {
                 hapticFeedback('light')
-                navigate(`/location/${loc.id}`)
+                navigate(`/category/${cat.id}`)
               }}
             />
           ))}
         </CardList>
       )}
       {showForm ? (
-        <AddLocationForm
-          value={locationName}
-          setValue={setLocationName}
+        <AddCategoryForm
+          value={categoryName}
+          setValue={setCategoryName}
           isLoading={adding}
           error={errorMessage || ''}
           handleClose={() => {
@@ -104,15 +120,15 @@ export const CountryPage = () => {
           handleSubmit={handleSubmit}
         />
       ) : (
-        <ActionButton
-          style={{ width: '20%', margin: '0 auto' }}
+        <Card
+          style={{ backgroundColor: colors.nudePink, width: '20%', margin: '0 auto' }}
           onClick={() => {
             hapticFeedback('light')
             setShowForm(true)
           }}
         >
           +
-        </ActionButton>
+        </Card>
       )}
     </PageWrapper>
   )
