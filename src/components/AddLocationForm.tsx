@@ -1,5 +1,4 @@
 import { styled } from 'styled-components'
-import { H2 } from '../uikit/typography'
 import { ActionButton, colors, Input } from '../uikit/uikit'
 
 const AddLocationForm = ({ value, setValue, isLoading, error, handleClose, handleSubmit }: {
@@ -12,7 +11,6 @@ const AddLocationForm = ({ value, setValue, isLoading, error, handleClose, handl
 }) => {
   return (
     <Wrapper>
-      <H2>Добавить локацию</H2>
       <Input type="text" value={value} onChange={e => setValue(e.target.value)} placeholder="Название локации" disabled={isLoading} />
       {error && <div style={{ color: '#f44336', marginTop: 8 }}>{error}</div>}
       <div style={{ display: 'flex', gap: 8 }}>

@@ -35,11 +35,11 @@ export const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   height: 100%;
   overflow: hidden;
   padding: 24px;
   gap: 16px;
+  min-height: 100vh;
 `
 
 export const ActionButton = styled.button`

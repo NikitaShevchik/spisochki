@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { collection, query, where, onSnapshot, addDoc, Timestamp, QueryDocumentSnapshot, type DocumentData } from 'firebase/firestore'
+import { collection, query, where, onSnapshot, addDoc, Timestamp, QueryDocumentSnapshot, type DocumentData, deleteDoc, doc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase/config'
 
 export interface Location {
@@ -76,10 +76,33 @@ export const useLocations = (countryId?: string) => {
     }
   }
 
+  const deleteLocation = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'locations', id))
+    } catch (err) {
+      console.error('Error deleting location:', err)
+      throw err instanceof Error ? err : new Error('Failed to delete location')
+    }
+  }
+
+  const updateLocation = async (id: string, newName: string) => {
+    try {
+      await updateDoc(doc(db, 'locations', id), {
+        name: newName.trim(),
+        updatedAt: Timestamp.now()
+      })
+    } catch (err) {
+      console.error('Error updating location:', err)
+      throw err instanceof Error ? err : new Error('Failed to update location')
+    }
+  }
+
   return {
     locations,
     loading,
     error,
-    createLocation
+    createLocation,
+    deleteLocation,
+    updateLocation
   }
 } 

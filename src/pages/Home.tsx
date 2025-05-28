@@ -64,7 +64,9 @@ const Home = () => {
               onDelete={handleDelete}
               onEdit={handleEdit}
               onSave={handleSave}
-              onClick={() => {
+              handleClick={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
                 hapticFeedback('light')
                 navigate(`/country/${country.id}`)
               }}

@@ -51,7 +51,7 @@ export const AddCountryButton = () => {
 
   return (
     <>
-      {!showForm && <ActionButton onClick={() => setShowForm(true)}>+</ActionButton>}
+      {!showForm && <ActionButton style={{ width: '20%', margin: '0 auto' }} onClick={() => setShowForm(true)}>+</ActionButton>}
 
       {showForm && (
         <AddCountryForm

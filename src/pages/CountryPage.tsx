@@ -1,24 +1,26 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useLocations } from '../hooks/useLocations'
-import { Card, CardList, colors, PageWrapper } from '../uikit/uikit'
+import { ActionButton, Card, CardList, colors, PageWrapper } from '../uikit/uikit'
 import { H2, Text } from '../uikit/typography'
 import Loader from '../components/Loader'
 import { useCountries } from '../hooks/useCountries'
 import AddLocationForm from '../components/AddLocationForm'
 import { hapticFeedback } from '../utils/telegram'
 import { useNavigateBack } from '../hooks/useNavigateBack'
+import { EditableCard } from '../components/EditableCard'
 
 export const CountryPage = () => {
   useNavigateBack()
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const { countries } = useCountries()
-  const { locations, loading, createLocation } = useLocations(id)
+  const { locations, loading, createLocation, deleteLocation, updateLocation } = useLocations(id)
   const [showForm, setShowForm] = useState(false)
   const [locationName, setLocationName] = useState('')
   const [adding, setAdding] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const selectedCountry = countries.find(country => country.id === id)
 
   const handleSubmit = async () => {
@@ -38,6 +40,29 @@ export const CountryPage = () => {
     }
   }
 
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteLocation(id)
+      hapticFeedback('medium')
+    } catch (err) {
+      hapticFeedback('heavy')
+    }
+  }
+
+  const handleEdit = async (id: string) => {
+    setEditingId(id)
+  }
+
+  const handleSave = async (id: string, newValue: string) => {
+    try {
+      await updateLocation(id, newValue)
+      hapticFeedback('medium')
+    } catch (err) {
+      hapticFeedback('heavy')
+    }
+    setEditingId(null)
+  }
+
   if (loading) {
     return <Loader />
   }
@@ -50,15 +75,19 @@ export const CountryPage = () => {
       ) : (
         <CardList>
           {locations.map(loc => (
-            <Card
+            <EditableCard
               key={loc.id}
-              onClick={() => {
+              id={loc.id}
+              content={loc.name}
+              editingId={editingId}
+              onDelete={handleDelete}
+              onEdit={handleEdit}
+              onSave={handleSave}
+              handleClick={() => {
                 hapticFeedback('light')
                 navigate(`/location/${loc.id}`)
               }}
-            >
-              {loc.name}
-            </Card>
+            />
           ))}
         </CardList>
       )}
@@ -75,15 +104,15 @@ export const CountryPage = () => {
           handleSubmit={handleSubmit}
         />
       ) : (
-        <Card
-          style={{ backgroundColor: colors.nudePink }}
+        <ActionButton
+          style={{ width: '20%', margin: '0 auto' }}
           onClick={() => {
             hapticFeedback('light')
             setShowForm(true)
           }}
         >
           +
-        </Card>
+        </ActionButton>
       )}
     </PageWrapper>
   )
