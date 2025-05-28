@@ -1,0 +1,65 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: pan-y;
+  overscroll-behavior: none;
+  overscroll-behavior-y: contain;
+  overscroll-behavior: none;
+}
+
+html,
+body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: fixed;
+  background-color: var(--tg-theme-bg-color, #ffffff);
+  color: var(--tg-theme-text-color, #000000);
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding-bottom: var(--tg-safe-area-inset-bottom);
+  padding-top: 80px; /* TODO: вот эту хуйню для телеграма чтобы сверху двигать место */
+  overscroll-behavior: none;
+
+  -webkit-overflow-scrolling: touch;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  position: relative;
+  scroll-behavior: smooth;
+  overscroll-behavior: none;
+
+}
+
+/* Prevent pull-to-refresh and overscroll effects */
+body {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent text selection */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Ensure proper touch handling */
+.touch-handler {
+  touch-action: pan-y;
+  -webkit-touch-callout: none;
+}
