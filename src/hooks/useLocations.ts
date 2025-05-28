@@ -15,25 +15,38 @@ export interface CreateLocationData {
 }
 
 const locationsCache: Record<string, Location[]> = {}
+let allLocationsCache: Location[] | null = null
 
 export const useLocations = (countryId?: string) => {
-  const [locations, setLocations] = useState<Location[]>(countryId ? locationsCache[countryId] || [] : [])
-  const [loading, setLoading] = useState(!countryId || !locationsCache[countryId])
+  const [locations, setLocations] = useState<Location[]>(
+    countryId
+      ? (locationsCache[countryId] || [])
+      : (allLocationsCache || [])
+  )
+  const [loading, setLoading] = useState(
+    countryId
+      ? !locationsCache[countryId]
+      : !allLocationsCache
+  )
   const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
-    if (!countryId) {
-      setLocations([])
+    if (countryId && locationsCache[countryId]) {
+      setLocations(locationsCache[countryId])
+      setLoading(false)
+      return
+    }
+    if (!countryId && allLocationsCache) {
+      setLocations(allLocationsCache)
       setLoading(false)
       return
     }
 
-    if (locationsCache[countryId]) {
-      setLocations(locationsCache[countryId])
-      setLoading(false)
-    }
+    // Создаем запрос
+    const q = countryId
+      ? query(collection(db, 'locations'), where('countryId', '==', countryId))
+      : query(collection(db, 'locations'))
 
-    const q = query(collection(db, 'locations'), where('countryId', '==', countryId))
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
@@ -45,7 +58,14 @@ export const useLocations = (countryId?: string) => {
           updatedAt: doc.data().updatedAt?.toDate(),
         }))
         setLocations(list)
-        locationsCache[countryId] = list
+
+        // Сохраняем в соответствующий кеш
+        if (countryId) {
+          locationsCache[countryId] = list
+        } else {
+          allLocationsCache = list
+        }
+
         setLoading(false)
       },
       (error) => {

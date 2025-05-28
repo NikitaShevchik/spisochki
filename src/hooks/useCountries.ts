@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { collection, onSnapshot, QueryDocumentSnapshot, type DocumentData, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore'
 import { db } from '../firebase/config'
+import { sendBotMessage } from '../uikit/telegram-bot'
 
 interface Country {
   id: string
@@ -30,6 +31,7 @@ export const useCountries = () => {
         setCountries(list)
         countriesCache = list
         setLoading(false)
+
       },
       (error) => {
         console.error('Error fetching countries:', error)
@@ -44,6 +46,7 @@ export const useCountries = () => {
   const createCountry = async (name: string) => {
     try {
       const docRef = await addDoc(collection(db, 'countries'), { name })
+      sendBotMessage(`🌍 Добавлена новая страна: <b>${name}</b>`)
       const newCountry = { id: docRef.id, name }
       setCountries(prev => [...prev, newCountry])
       return newCountry
@@ -53,9 +56,11 @@ export const useCountries = () => {
   }
 
   const deleteCountry = async (id: string) => {
+    const country = countries.find(country => country.id === id)
     try {
       await deleteDoc(doc(db, 'countries', id))
       setCountries(prev => prev.filter(country => country.id !== id))
+      sendBotMessage(`🌍 Удалена страна: <b>${country?.name}</b>`)
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to delete country')
     }
