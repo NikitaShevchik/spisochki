@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Card, colors } from '../uikit/uikit'
 import { hapticFeedback } from '../utils/telegram'
-import AddCountryForm from './AddCountryForm'
 import { useCountries } from '../hooks/useCountries'
+import ModalWrapper from './Modal/ModalWrapper'
+import AddItemForm from './Forms/AddItemForm'
 
 export const AddCountryButton = () => {
   const [showForm, setShowForm] = useState(false)
@@ -32,17 +33,20 @@ export const AddCountryButton = () => {
 
   if (showForm) {
     return (
-      <AddCountryForm
-        value={countryName}
-        setValue={setCountryName}
-        isLoading={isLoading}
-        error={error || ''}
-        handleClose={() => {
-          hapticFeedback('light')
-          setShowForm(false)
-        }}
-        handleSubmit={handleSubmit}
-      />
+      <ModalWrapper handleClose={() => {
+        hapticFeedback('light')
+        setShowForm(false)
+      }}>
+        <AddItemForm
+          title="Добавить страну"
+          value={countryName}
+          placeholder="Название страны"
+          setValue={setCountryName}
+          isLoading={isLoading}
+          error={error || ''}
+          handleSubmit={handleSubmit}
+        />
+      </ModalWrapper>
     )
   }
 

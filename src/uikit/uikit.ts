@@ -8,6 +8,7 @@ export const colors = {
   gray: '#2D2D2D50',
   disabled: '#a1a9ba',
   red: '#FFABAB',
+  border: "#CDCFD0"
 }
 
 export const Card = styled.div`
@@ -66,7 +67,7 @@ export const ActionButton = styled.button`
 
 export const Input = styled.input`
   background: ${colors.nudePink};
-  border-radius: 48px;
+  border-radius: 12px;
   padding: 16px;
   width: 100%;
   border: none;
@@ -74,3 +75,41 @@ export const Input = styled.input`
   color: ${colors.black};
 `
 
+export const InputTextarea = styled.textarea`
+  background: ${colors.nudePink};
+  font-family: 'Inter', sans-serif;
+  border-radius: 12px;
+  padding: 16px;
+  height: 80px;
+  width: 100%;
+  border: none;
+  outline: none;
+  color: ${colors.black};
+  resize: none;
+`
+
+export const PinkCheckbox = styled.input`
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: 1px solid ${colors.border};
+  cursor: pointer;
+  &:checked {
+    background: ${colors.pink};
+    border-color: ${colors.pink};
+  }
+`
+
+export const PlacesCount = styled.div`
+  background: ${colors.pink};
+  color: ${colors.black};
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+`

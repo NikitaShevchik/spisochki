@@ -4,43 +4,25 @@ import { useCountries } from '../hooks/useCountries'
 import { CardList, PageWrapper } from '../uikit/uikit'
 import { AddCountryButton } from '../components/AddCountryButton'
 import { hapticFeedback, telegramWebApp, isTelegramWebApp } from '../utils/telegram'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { H2 } from '../uikit/typography'
 import { EditableCard } from '../components/EditableCard'
+import { useEditableItem } from '../hooks/useEditableItem'
 
 const Home = () => {
   const navigate = useNavigate()
   const { countries, loading, error, isEmpty, deleteCountry, updateCountry } = useCountries()
-  const [editingId, setEditingId] = useState<string | null>(null)
+
+  const { editingId, handleDelete, handleEdit, handleSave } = useEditableItem({
+    onDelete: deleteCountry,
+    onUpdate: updateCountry
+  })
 
   useEffect(() => {
     if (isTelegramWebApp()) {
       telegramWebApp.BackButton.hide()
     }
   }, [])
-
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteCountry(id)
-      hapticFeedback('medium')
-    } catch (err) {
-      hapticFeedback('heavy')
-    }
-  }
-
-  const handleEdit = async (id: string) => {
-    setEditingId(id)
-  }
-
-  const handleSave = async (id: string, newValue: string) => {
-    try {
-      await updateCountry(id, newValue)
-      hapticFeedback('medium')
-    } catch (err) {
-      hapticFeedback('heavy')
-    }
-    setEditingId(null)
-  }
 
   if (loading) {
     return <Loader />
