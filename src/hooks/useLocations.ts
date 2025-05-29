@@ -89,6 +89,7 @@ export const useLocations = (countryId?: string) => {
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
       })
+      // Не обновляем локальное состояние, так как onSnapshot обновит его автоматически
       return docRef.id
     } catch (err) {
       console.error('Error adding location:', err)
@@ -99,6 +100,7 @@ export const useLocations = (countryId?: string) => {
   const deleteLocation = async (id: string) => {
     try {
       await deleteDoc(doc(db, 'locations', id))
+      // Не обновляем локальное состояние, так как onSnapshot обновит его автоматически
     } catch (err) {
       console.error('Error deleting location:', err)
       throw err instanceof Error ? err : new Error('Failed to delete location')
@@ -111,6 +113,7 @@ export const useLocations = (countryId?: string) => {
         name: newName.trim(),
         updatedAt: Timestamp.now()
       })
+      // Не обновляем локальное состояние, так как onSnapshot обновит его автоматически
     } catch (err) {
       console.error('Error updating location:', err)
       throw err instanceof Error ? err : new Error('Failed to update location')

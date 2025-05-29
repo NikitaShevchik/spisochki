@@ -7,6 +7,58 @@ import { PageWrapper } from '../uikit/uikit'
 import { hapticFeedback } from '../utils/telegram'
 import { useNavigate } from 'react-router-dom'
 
+export const AuthPage = ({ onAuth }: { onAuth: (password: string) => Promise<boolean> }) => {
+  const navigate = useNavigate()
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!password.trim()) {
+      setError('Введите пароль')
+      hapticFeedback('heavy')
+      return
+    }
+
+    setIsLoading(true)
+    setError('')
+
+    try {
+      const success = await onAuth(password)
+      if (success) {
+        hapticFeedback('medium')
+        navigate('/')
+      }
+    } catch (err) {
+      console.log(err)
+      setError('Неверный пароль')
+      hapticFeedback('heavy')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <PageWrapper>
+      <H2>Авторизация</H2>
+      <AuthForm onSubmit={handleSubmit}>
+        <Input
+          type="password"
+          placeholder="Введите пароль"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          disabled={isLoading}
+        />
+        <SubmitButton type="submit" disabled={isLoading}>
+          {isLoading ? 'Проверка...' : 'Войти'}
+        </SubmitButton>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+      </AuthForm>
+    </PageWrapper>
+  )
+}
+
 const AuthForm = styled.form`
   display: flex;
   flex-direction: column;
@@ -38,58 +90,3 @@ const ErrorMessage = styled.div`
   text-align: center;
   font-size: 14px;
 `
-
-interface AuthPageProps {
-  onAuth: (password: string) => Promise<boolean>
-}
-
-export const AuthPage = ({ onAuth }: AuthPageProps) => {
-  const navigate = useNavigate()
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!password.trim()) {
-      setError('Введите пароль')
-      hapticFeedback('heavy')
-      return
-    }
-
-    setIsLoading(true)
-    setError('')
-
-    try {
-      const success = await onAuth(password)
-      if (success) {
-        hapticFeedback('medium')
-        navigate('/')
-      }
-    } catch (err) {
-      setError('Неверный пароль')
-      hapticFeedback('heavy')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  return (
-    <PageWrapper>
-      <H2>Авторизация</H2>
-      <AuthForm onSubmit={handleSubmit}>
-        <Input
-          type="password"
-          placeholder="Введите пароль"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          disabled={isLoading}
-        />
-        <SubmitButton type="submit" disabled={isLoading}>
-          {isLoading ? 'Проверка...' : 'Войти'}
-        </SubmitButton>
-        {error && <ErrorMessage>{error}</ErrorMessage>}
-      </AuthForm>
-    </PageWrapper>
-  )
-} 

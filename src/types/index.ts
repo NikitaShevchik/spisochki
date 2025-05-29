@@ -22,11 +22,14 @@ export interface Category {
 }
 
 export interface Place {
-  id: string;
-  name: string;
-  description?: string;
-  address?: string;
-  categoryId: string;
-  createdAt: Date;
-  updatedAt: Date;
-} 
+  id: string
+  name: string
+  description?: string
+  address?: string
+  instagram?: string
+  categoryId: string
+  visited: boolean
+  photos: string[]
+  createdAt: Date
+  updatedAt: Date
+}

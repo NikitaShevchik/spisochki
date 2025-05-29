@@ -1,71 +1,62 @@
-import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { collection, query, where, onSnapshot, getDocs, updateDoc, doc, Timestamp } from 'firebase/firestore'
-import { db } from '../firebase/config'
+import styled from 'styled-components'
+import { useParams, useNavigate } from 'react-router-dom'
+import Loader from '../components/Loader'
+import { H2, Text } from '../uikit/typography'
+import PlaceItem from '../components/PlaceItem'
 import { useNavigateBack } from '../hooks/useNavigateBack'
+import { usePlacesByCategory } from '../hooks/usePlacesByCategory'
+import { CardList, PageWrapper, PlacesCount, colors } from '../uikit/uikit'
 
 export const AllPlacesPage = () => {
   useNavigateBack()
+  const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
-  const [places, setPlaces] = useState<{ id: string, name: string, visited: boolean }[]>([])
-  const [loading, setLoading] = useState(true)
+  const { loading, categories, totalPlaces, toggleVisited } = usePlacesByCategory(id)
 
-  useEffect(() => {
-    if (!id) return
-    // Получаем все категории этой локации
-    const fetchAllPlaces = async () => {
-      const categoriesSnap = await getDocs(query(collection(db, 'categories'), where('locationId', '==', id)))
-      const categoryIds = categoriesSnap.docs.map(doc => doc.id)
-      if (!categoryIds.length) {
-        setPlaces([])
-        setLoading(false)
-        return
-      }
-      // Получаем все места для этих категорий
-      const q = query(collection(db, 'places'), where('categoryId', 'in', categoryIds))
-      onSnapshot(q, (snapshot) => {
-        const list = snapshot.docs.map(doc => ({
-          id: doc.id,
-          name: doc.data().name,
-          visited: !!doc.data().visited,
-        }))
-        setPlaces(list)
-        setLoading(false)
-      })
-    }
-    fetchAllPlaces()
-  }, [id])
-
-  const handleToggleVisited = async (placeId: string, current: boolean) => {
-    try {
-      await updateDoc(doc(db, 'places', placeId), { visited: !current, updatedAt: Timestamp.now() })
-    } catch (err) {
-      alert('Ошибка обновления статуса посещения')
-    }
-  }
+  if (loading) return <Loader />
 
   return (
-    <div>
-      <h2>Все места локации</h2>
-      {loading ? (
-        <div>Загрузка мест...</div>
-      ) : !places.length ? (
-        <div>Нет добавленных мест</div>
+    <PageWrapper>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <H2>Все места</H2>
+        {totalPlaces > 10 && <PlacesCount>{totalPlaces}</PlacesCount>}
+      </div>
+      {!categories.length ? (
+        <Text>Нет добавленных мест</Text>
       ) : (
-        <ul>
-          {places.map(place => (
-            <li key={place.id} style={{ opacity: place.visited ? 0.5 : 1, textDecoration: place.visited ? 'line-through' : 'none' }}>
-              <input
-                type="checkbox"
-                checked={place.visited}
-                onChange={() => handleToggleVisited(place.id, place.visited)}
-                style={{ marginRight: 12 }}
-              />
-              <Link to={`/place/${place.id}`}>{place.name}</Link>
-            </li>
+        <CategoriesList>
+          {categories.map(({ category, places }) => (
+            <CategorySection key={category.id}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <H2 style={{ color: colors.pink }}>{category.name}</H2>
+                {places.length > 10 && <PlacesCount>{places.length}</PlacesCount>}
+              </div>
+              {places.length > 0 ? (
+                <CardList>
+                  {places.map(place => (
+                    <PlaceItem key={place.id} place={place} toggleVisited={toggleVisited} navigate={navigate} />
+                  ))}
+                </CardList>
+              ) : (
+                <Text style={{ textAlign: 'center', opacity: 0.5 }}>Нет добавленных мест</Text>
+              )}
+            </CategorySection>
           ))}
-        </ul>
+        </CategoriesList>
       )}
-    </div>
+    </PageWrapper>
   )
-} 
+}
+
+const CategoriesList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+`
+
+const CategorySection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`

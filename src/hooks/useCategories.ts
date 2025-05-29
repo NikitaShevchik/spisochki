@@ -15,25 +15,37 @@ export interface CreateCategoryData {
 }
 
 const categoriesCache: Record<string, Category[]> = {}
+let allCategoriesCache: Category[] | null = null
 
 export const useCategories = (locationId?: string) => {
-  const [categories, setCategories] = useState<Category[]>(locationId ? categoriesCache[locationId] || [] : [])
-  const [loading, setLoading] = useState(!locationId || !categoriesCache[locationId])
+  const [categories, setCategories] = useState<Category[]>(
+    locationId
+      ? (categoriesCache[locationId] || [])
+      : (allCategoriesCache || [])
+  )
+  const [loading, setLoading] = useState(
+    locationId
+      ? !categoriesCache[locationId]
+      : !allCategoriesCache
+  )
   const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
-    if (!locationId) {
-      setCategories([])
+    if (locationId && categoriesCache[locationId]) {
+      setCategories(categoriesCache[locationId])
+      setLoading(false)
+      return
+    }
+    if (!locationId && allCategoriesCache) {
+      setCategories(allCategoriesCache)
       setLoading(false)
       return
     }
 
-    if (categoriesCache[locationId]) {
-      setCategories(categoriesCache[locationId])
-      setLoading(false)
-    }
+    const q = locationId
+      ? query(collection(db, 'categories'), where('locationId', '==', locationId))
+      : query(collection(db, 'categories'))
 
-    const q = query(collection(db, 'categories'), where('locationId', '==', locationId))
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
@@ -45,7 +57,12 @@ export const useCategories = (locationId?: string) => {
           updatedAt: doc.data().updatedAt?.toDate(),
         }))
         setCategories(list)
-        categoriesCache[locationId] = list
+
+        if (locationId) {
+          categoriesCache[locationId] = list
+        } else {
+          allCategoriesCache = list
+        }
         setLoading(false)
       },
       (error) => {

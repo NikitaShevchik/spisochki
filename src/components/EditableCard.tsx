@@ -4,22 +4,6 @@ import { colors } from '../uikit/uikit'
 import { SwipeableCard } from './SwipeableCard'
 import { Input } from '../uikit/uikit'
 
-const SaveInputCardButton = styled.button`
-  top: 0;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  color: ${colors.black};
-  background: ${colors.pink};
-  font-weight: bold;
-  cursor: pointer;
-  padding: 0 20px;
-  border-radius: 0 48px 48px 0;
-  z-index: 0;
-`
-
 interface EditableCardProps {
   id: string
   content: string
@@ -30,15 +14,7 @@ interface EditableCardProps {
   handleClick: (e: React.MouseEvent<HTMLDivElement>) => void
 }
 
-export const EditableCard = ({
-  id,
-  content,
-  editingId,
-  onDelete,
-  onEdit,
-  onSave,
-  handleClick,
-}: EditableCardProps) => {
+export const EditableCard = ({ id, content, editingId, onDelete, onEdit, onSave, handleClick }: EditableCardProps) => {
   const [editValue, setEditValue] = useState(content)
 
   const handleSave = () => {
@@ -75,4 +51,20 @@ export const EditableCard = ({
       </div>
     </SwipeableCard>
   )
-} 
+}
+
+const SaveInputCardButton = styled.button`
+  top: 0;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  color: ${colors.black};
+  background: ${colors.pink};
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0 20px;
+  border-radius: 0 48px 48px 0;
+  z-index: 0;
+`

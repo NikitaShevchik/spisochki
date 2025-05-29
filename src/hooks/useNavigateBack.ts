@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 
 let alreadyShowen = false;
 
-export const useNavigateBack = (url: any = -1, deps: any[] = []) => {
+export const useNavigateBack = (url: string | (() => void) | number = -1, deps: string[] = []) => {
   const navigate = useNavigate();
   useEffect(() => {
     const handler = () => {
       if (typeof url === "function") url();
-      else navigate(url, { replace: true });
+      else navigate(url as string, { replace: true });
     };
 
     const navigateBackButton = document.getElementById("navigateBackButton");
