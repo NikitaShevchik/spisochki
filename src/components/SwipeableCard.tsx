@@ -3,6 +3,7 @@ import type { PanInfo } from 'framer-motion'
 import styled from 'styled-components'
 import { colors } from '../uikit/uikit'
 import { hapticFeedback } from '../utils/telegram'
+import { useState } from 'react'
 
 interface SwipeableCardProps {
   children: React.ReactNode
@@ -14,8 +15,10 @@ interface SwipeableCardProps {
 export const SwipeableCard = ({ children, onDelete, onEdit, handleClick }: SwipeableCardProps) => {
   const x = useMotionValue(0)
   const controls = useAnimation()
+  const [isDragging, setIsDragging] = useState(false)
 
   const handleDragEnd = async (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    setIsDragging(false)
     const threshold = -100
     if (info.offset.x < threshold) {
       await controls.start({ x: -130 })
@@ -28,11 +31,19 @@ export const SwipeableCard = ({ children, onDelete, onEdit, handleClick }: Swipe
 
   const handleDragStart = (e: MouseEvent | TouchEvent | PointerEvent) => {
     e.stopPropagation()
+    setIsDragging(true)
     hapticFeedback('light')
   }
 
+  const handleDrag = (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    if (Math.abs(info.offset.y) > Math.abs(info.offset.x) && Math.abs(info.offset.y) > 10) {
+      controls.start({ x: 0 })
+      setIsDragging(false)
+    }
+  }
+
   return (
-    <CardContainer>
+    <CardContainer isDragging={isDragging}>
       <DeleteButton onClick={onDelete}>
         Delete
       </DeleteButton>
@@ -43,10 +54,10 @@ export const SwipeableCard = ({ children, onDelete, onEdit, handleClick }: Swipe
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.1}
-        dragDirectionLock={true}
         dragMomentum={false}
         onDragEnd={handleDragEnd}
         onDragStart={handleDragStart}
+        onDrag={handleDrag}
         animate={controls}
         style={{ x }}
         onClick={(e) => {
@@ -61,10 +72,10 @@ export const SwipeableCard = ({ children, onDelete, onEdit, handleClick }: Swipe
   )
 }
 
-const CardContainer = styled.div`
+const CardContainer = styled.div<{ isDragging: boolean }>`
   position: relative;
   width: 100%;
-  touch-action: pan-x;
+  touch-action: pan-y;
 `
 
 const ActionButton = styled(motion.button)`
