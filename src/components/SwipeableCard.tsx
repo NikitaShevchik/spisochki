@@ -26,7 +26,8 @@ export const SwipeableCard = ({ children, onDelete, onEdit, handleClick }: Swipe
     }
   }
 
-  const handleDragStart = () => {
+  const handleDragStart = (e: MouseEvent | TouchEvent | PointerEvent) => {
+    e.stopPropagation()
     hapticFeedback('light')
   }
 
@@ -42,6 +43,8 @@ export const SwipeableCard = ({ children, onDelete, onEdit, handleClick }: Swipe
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.1}
+        dragDirectionLock={true}
+        dragMomentum={false}
         onDragEnd={handleDragEnd}
         onDragStart={handleDragStart}
         animate={controls}
@@ -61,6 +64,7 @@ export const SwipeableCard = ({ children, onDelete, onEdit, handleClick }: Swipe
 const CardContainer = styled.div`
   position: relative;
   width: 100%;
+  touch-action: pan-x;
 `
 
 const ActionButton = styled(motion.button)`
@@ -76,6 +80,7 @@ const ActionButton = styled(motion.button)`
   cursor: pointer;
   padding: 0 20px;
   z-index: 0;
+  touch-action: none;
 `
 
 export const DeleteButton = styled(ActionButton)`
@@ -89,7 +94,7 @@ const EditButton = styled(ActionButton)`
   right: 70px;
   background-color: ${colors.nudePink};
   color: ${colors.black};
-  width: 80px;
+  width: 100px;
   padding-right: 15px;
   text-align: left;
   justify-content: flex-end;
@@ -107,7 +112,7 @@ const CardContent = styled(motion.div)`
   align-items: center;
   color: ${colors.black};
   cursor: pointer;
-  touch-action: pan-y;
+  touch-action: pan-x;
   position: relative;
   z-index: 1;
   background: ${colors.pink};
