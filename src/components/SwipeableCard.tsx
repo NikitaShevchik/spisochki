@@ -94,7 +94,7 @@ const EditButton = styled(ActionButton)`
   right: 70px;
   background-color: ${colors.nudePink};
   color: ${colors.black};
-  width: 80px;
+  width: 100px;
   padding-right: 15px;
   text-align: left;
   justify-content: flex-end;
