@@ -1,7 +1,7 @@
 
 import { useParams, useNavigate } from 'react-router-dom'
 import { useLocations } from '../hooks/useLocations'
-import { CardList, PageWrapper } from '../uikit/uikit'
+import { ActionButton, CardList, PageWrapper } from '../uikit/uikit'
 import { H2, Text } from '../uikit/typography'
 import Loader from '../components/Loader'
 import { useCountries } from '../hooks/useCountries'
@@ -18,11 +18,47 @@ export const CountryPage = () => {
   const { countries } = useCountries()
   const { locations, loading, createLocation, deleteLocation, updateLocation } = useLocations(id)
   const selectedCountry = countries.find(country => country.id === id)
+  
+  const handleSubmit = async () => {
+    if (!locationName.trim()) return
+    setAdding(true)
+    setErrorMessage(null)
+    try {
+      await createLocation({ name: locationName })
+      setLocationName('')
+      setShowForm(false)
+      hapticFeedback('light')
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Ошибка добавления')
+      hapticFeedback('light')
+    } finally {
+      setAdding(false)
+    }
+  }
+  
 
-  const { editingId, handleDelete, handleEdit, handleSave } = useEditableItem({
-    onDelete: deleteLocation,
-    onUpdate: updateLocation
-  })
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteLocation(id)
+      hapticFeedback('medium')
+    } catch (err) {
+      hapticFeedback('heavy')
+    }
+  }
+
+  const handleEdit = async (id: string) => {
+    setEditingId(id)
+  }
+
+  const handleSave = async (id: string, newValue: string) => {
+    try {
+      await updateLocation(id, newValue)
+      hapticFeedback('medium')
+    } catch (err) {
+      hapticFeedback('heavy')
+    }
+    setEditingId(null)
+  }
 
   if (loading) {
     return <Loader />
