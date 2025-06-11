@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useLocations } from '../hooks/useLocations'
-import { ActionButton, Card, CardList, colors, PageWrapper } from '../uikit/uikit'
+import { ActionButton, CardList, PageWrapper } from '../uikit/uikit'
 import { H2, Text } from '../uikit/typography'
 import Loader from '../components/Loader'
 import { useCountries } from '../hooks/useCountries'
@@ -39,6 +39,7 @@ export const CountryPage = () => {
       setAdding(false)
     }
   }
+  
 
   const handleDelete = async (id: string) => {
     try {
