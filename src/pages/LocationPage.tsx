@@ -8,7 +8,8 @@ import { hapticFeedback } from '../utils/telegram'
 import { useNavigateBack } from '../hooks/useNavigateBack'
 import { EditableCard } from '../components/EditableCard'
 import { useLocations } from '../hooks/useLocations'
-import AddCategoryForm from '../components/AddCategoryForm'
+import AddItemForm from '../components/Forms/AddItemForm'
+import ModalWrapper from '../components/Modal/ModalWrapper'
 
 export const LocationPage = () => {
   useNavigateBack()
@@ -46,6 +47,7 @@ export const LocationPage = () => {
       await deleteCategory(id)
       hapticFeedback('medium')
     } catch (err) {
+      console.log(err)
       hapticFeedback('heavy')
     }
   }
@@ -59,6 +61,7 @@ export const LocationPage = () => {
       await updateCategory(id, newValue)
       hapticFeedback('medium')
     } catch (err) {
+      console.log(err)
       hapticFeedback('heavy')
     }
     setEditingId(null)
@@ -108,17 +111,20 @@ export const LocationPage = () => {
         </CardList>
       )}
       {showForm ? (
-        <AddCategoryForm
-          value={categoryName}
-          setValue={setCategoryName}
-          isLoading={adding}
-          error={errorMessage || ''}
-          handleClose={() => {
-            hapticFeedback('light')
-            setShowForm(false)
-          }}
-          handleSubmit={handleSubmit}
-        />
+        <ModalWrapper handleClose={() => {
+          hapticFeedback('light')
+          setShowForm(false)
+        }}>
+          <AddItemForm
+            title="Добавить категорию"
+            value={categoryName}
+            setValue={setCategoryName}
+            isLoading={adding}
+            error={errorMessage || ''}
+            handleSubmit={handleSubmit}
+            placeholder="Название категории"
+          />
+        </ModalWrapper>
       ) : (
         <Card
           style={{ backgroundColor: colors.nudePink, width: '20%', margin: '0 auto' }}

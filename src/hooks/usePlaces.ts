@@ -1,17 +1,7 @@
 import { useEffect, useState } from 'react'
 import { collection, query, where, onSnapshot, addDoc, updateDoc, doc, Timestamp, QueryDocumentSnapshot, type DocumentData } from 'firebase/firestore'
 import { db } from '../firebase/config'
-
-export interface Place {
-  id: string
-  name: string
-  description?: string
-  address?: string
-  categoryId: string
-  visited: boolean
-  createdAt: Date
-  updatedAt: Date
-}
+import type { Place } from '../types'
 
 const placesCache: Record<string, Place[]> = {}
 
@@ -43,6 +33,7 @@ export const usePlaces = (categoryId?: string) => {
           address: doc.data().address,
           categoryId: doc.data().categoryId,
           visited: !!doc.data().visited,
+          photos: doc.data().photos || [],
           createdAt: doc.data().createdAt?.toDate(),
           updatedAt: doc.data().updatedAt?.toDate(),
         }))
@@ -64,6 +55,7 @@ export const usePlaces = (categoryId?: string) => {
     try {
       const docRef = await addDoc(collection(db, 'places'), {
         ...placeData,
+        photos: placeData.photos || [],
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
       })

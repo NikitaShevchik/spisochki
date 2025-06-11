@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, signInAnonymously } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBuNk0Er13WVpmZS_3vZ57gXNSOgfABbb0",
@@ -25,6 +26,9 @@ console.log('Firestore initialized', "default");
 const auth = getAuth(app);
 console.log('Auth initialized');
 
+const storage = getStorage(app);
+console.log('Storage initialized');
+
 // Initialize anonymous auth
 signInAnonymously(auth)
   .then((userCredential) => {
@@ -36,4 +40,4 @@ signInAnonymously(auth)
     throw error;
   });
 
-export { app, db, auth }; 
+export { app, db, auth, storage }; 

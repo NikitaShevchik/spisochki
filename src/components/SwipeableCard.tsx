@@ -2,11 +2,69 @@ import { motion, useMotionValue, useAnimation } from 'framer-motion'
 import type { PanInfo } from 'framer-motion'
 import styled from 'styled-components'
 import { colors } from '../uikit/uikit'
+import { hapticFeedback } from '../utils/telegram'
+
+interface SwipeableCardProps {
+  children: React.ReactNode
+  onDelete: () => void
+  onEdit: () => void
+  handleClick?: (e: React.MouseEvent<HTMLDivElement>) => void
+}
+
+export const SwipeableCard = ({ children, onDelete, onEdit, handleClick }: SwipeableCardProps) => {
+  const x = useMotionValue(0)
+  const controls = useAnimation()
+
+  const handleDragEnd = async (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const threshold = -100
+    if (info.offset.x < threshold) {
+      await controls.start({ x: -130 })
+      hapticFeedback('medium')
+    } else {
+      await controls.start({ x: 0 })
+      hapticFeedback('light')
+    }
+  }
+
+  const handleDragStart = (e: MouseEvent | TouchEvent | PointerEvent) => {
+    e.stopPropagation()
+    hapticFeedback('light')
+  }
+
+  return (
+    <CardContainer>
+      <DeleteButton onClick={onDelete}>
+        Delete
+      </DeleteButton>
+      <EditButton onClick={onEdit}>
+        Edit
+      </EditButton>
+      <CardContent
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.1}
+        dragDirectionLock={true}
+        dragMomentum={false}
+        onDragEnd={handleDragEnd}
+        onDragStart={handleDragStart}
+        animate={controls}
+        style={{ x }}
+        onClick={(e) => {
+          e.stopPropagation()
+          e.preventDefault()
+          handleClick?.(e)
+        }}
+      >
+        {children}
+      </CardContent>
+    </CardContainer>
+  )
+}
 
 const CardContainer = styled.div`
   position: relative;
   width: 100%;
-  overflow: hidden;
+  touch-action: pan-x;
 `
 
 const ActionButton = styled(motion.button)`
@@ -22,6 +80,7 @@ const ActionButton = styled(motion.button)`
   cursor: pointer;
   padding: 0 20px;
   z-index: 0;
+  touch-action: none;
 `
 
 export const DeleteButton = styled(ActionButton)`
@@ -32,10 +91,10 @@ export const DeleteButton = styled(ActionButton)`
 `
 
 const EditButton = styled(ActionButton)`
-  right: 80px;
+  right: 70px;
   background-color: ${colors.nudePink};
   color: ${colors.black};
-  width: 80px;
+  width: 100px;
   padding-right: 15px;
   text-align: left;
   justify-content: flex-end;
@@ -53,55 +112,8 @@ const CardContent = styled(motion.div)`
   align-items: center;
   color: ${colors.black};
   cursor: pointer;
-  touch-action: pan-y;
+  touch-action: pan-x;
   position: relative;
   z-index: 1;
   background: ${colors.pink};
 `
-
-interface SwipeableCardProps {
-  children: React.ReactNode
-  onDelete: () => void
-  onEdit: () => void
-  handleClick?: (e: React.MouseEvent<HTMLDivElement>) => void
-}
-
-export const SwipeableCard = ({ children, onDelete, onEdit, handleClick }: SwipeableCardProps) => {
-  const x = useMotionValue(0)
-  const controls = useAnimation()
-
-  const handleDragEnd = async (_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const threshold = -100
-    if (info.offset.x < threshold) {
-      await controls.start({ x: -130 })
-    } else {
-      await controls.start({ x: 0 })
-    }
-  }
-
-  return (
-    <CardContainer>
-      <DeleteButton onClick={onDelete}>
-        Delete
-      </DeleteButton>
-      <EditButton onClick={onEdit}>
-        Edit
-      </EditButton>
-      <CardContent
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        dragElastic={0.1}
-        onDragEnd={handleDragEnd}
-        animate={controls}
-        style={{ x }}
-        onClick={(e) => {
-          e.stopPropagation()
-          e.preventDefault()
-          handleClick?.(e)
-        }}
-      >
-        {children}
-      </CardContent>
-    </CardContainer>
-  )
-} 

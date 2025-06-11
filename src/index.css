@@ -12,6 +12,10 @@
   overscroll-behavior: none;
 }
 
+::-webkit-scrollbar {
+  display: none;
+}
+
 html,
 body {
   height: 100%;
